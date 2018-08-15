@@ -31,7 +31,7 @@
       <outgoing>invoiceNotApproved</outgoing>
       <outgoing>invoiceApproved</outgoing>
     </exclusiveGateway>
-    <userTask id="reviewInvoice" name="Review Invoice" camunda:formKey="embedded:app:develop/invoice-forms/review-invoice.html" camunda:assignee="demo" camunda:dueDate="${dateTime().plusDays(2).toDate()}">
+    <userTask id="reviewInvoice" name="Review Invoice" camunda:formKey="embedded:deployment:review-invoice.html" camunda:assignee="demo" camunda:dueDate="${dateTime().plusDays(2).toDate()}">
       <documentation>Review the invoice.
 
 
@@ -44,7 +44,7 @@ If data is missing, provide it.</documentation>
       <outgoing>reviewNotSuccessful</outgoing>
       <outgoing>reviewSuccessful</outgoing>
     </exclusiveGateway>
-    <userTask id="prepareBankTransfer" name="Prepare&#10;Bank&#10;Transfer" camunda:formKey="embedded:app:develop/invoice-forms/prepare-bank-transfer.html" camunda:candidateGroups="accounting" camunda:dueDate="${dateTime().plusWeeks(1).toDate()}">
+    <userTask id="prepareBankTransfer" name="Prepare&#10;Bank&#10;Transfer" camunda:formKey="embedded:deployment:prepare-bank-transfer.html" camunda:candidateGroups="accounting" camunda:dueDate="${dateTime().plusWeeks(1).toDate()}">
       <documentation>Prepare the bank transfer.</documentation>
       <incoming>invoiceApproved</incoming>
       <outgoing>SequenceFlow_2</outgoing>
@@ -66,7 +66,7 @@ If data is missing, provide it.</documentation>
     <dataStoreReference id="DataStoreReference_1" name="Financial Accounting System" dataStoreRef="FinancialAccountingSystem" />
     <sequenceFlow id="sequenceFlow_178" isImmediate="true" sourceRef="assignApprover" targetRef="approveInvoice" />
     <sequenceFlow id="SequenceFlow_2" name="" sourceRef="prepareBankTransfer" targetRef="ServiceTask_1" />
-    <startEvent id="StartEvent_1" name="Invoice&#10;received" camunda:formKey="embedded:app:forms/start-form.html">
+    <startEvent id="StartEvent_1" name="Invoice&#10;received" camunda:formKey="embedded:deployment:start-form.html">
       <outgoing>SequenceFlow_1</outgoing>
     </startEvent>
     <sequenceFlow id="SequenceFlow_1" name="" sourceRef="StartEvent_1" targetRef="assignApprover" />
@@ -92,12 +92,6 @@ If data is missing, provide it.</documentation>
       <outgoing>sequenceFlow_180</outgoing>
     </serviceTask>
     <association id="Association_1" sourceRef="DataStoreReference_1" targetRef="prepareBankTransfer" />
-    <textAnnotation id="TextAnnotation_0dbcalx">
-      <text>Set 'approved' variable</text>
-    </textAnnotation>
-    <textAnnotation id="TextAnnotation_1bjzam5">
-      <text>backup: asign with due data to userGroup of Approver</text>
-    </textAnnotation>
   </process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_73">
     <bpmndi:BPMNPlane id="BPMNPlane_73" bpmnElement="collaboration_3">
@@ -241,12 +235,6 @@ If data is missing, provide it.</documentation>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="ServiceTask_015cpcj_di" bpmnElement="approveInvoice">
         <omgdc:Bounds x="353" y="224" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="TextAnnotation_0dbcalx_di" bpmnElement="TextAnnotation_0dbcalx">
-        <omgdc:Bounds x="86" y="198" width="100" height="40" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="TextAnnotation_1bjzam5_di" bpmnElement="TextAnnotation_1bjzam5">
-        <omgdc:Bounds x="86" y="258" width="100" height="68" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
