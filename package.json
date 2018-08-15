@@ -10,6 +10,7 @@
     "camunda-external-task-client-js": "1.0.0",
     "download-pdf": "^0.1.6",
     "fs": "0.0.1-security",
-    "request": "^2.88.0"
+    "request": "^2.88.0",
+    "hawk": "^7.0.7"
   }
 }
