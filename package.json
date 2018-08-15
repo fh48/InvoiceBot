@@ -7,6 +7,9 @@
   "dependencies": {
     "botkit": "^0.6.16",
     "camunda-bpm-sdk-js": "^7.7.4-SNAPSHOT",
-    "camunda-external-task-client-js": "1.0.0"
+    "camunda-external-task-client-js": "1.0.0",
+    "download-pdf": "^0.1.6",
+    "fs": "0.0.1-security",
+    "request": "^2.88.0"
   }
 }
