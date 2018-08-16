@@ -1,15 +1,16 @@
+// local files
+const absence = require("./absenceClient");
+const dialogflow = require("./dialogFlowClient");
+const sendPdf = require("./engineIntegration");
+
+// libraries
 const {
   Client,
   File,
   logger,
   Variables
 } = require("camunda-external-task-client-js");
-
-const absence = require("./absenceClient");
-
 const Botkit = require("botkit");
-
-const sendPdf = require("./engineIntegration");
 
 const holidayData = absence.returnHolidayData();
 const USERS = {
@@ -63,16 +64,16 @@ controller.hears(
 
 const client = new Client(config);
 
-// const customOption = {
-//   lockDuration: 5000,
-//   variables: [
-//     "creditor",
-//     "invoiceCategory",
-//     "amount",
-//     "invoiceNumber",
-//     "invoiceDocumentUpload"
-//   ]
-// };
+const customOption = {
+  lockDuration: 5000,
+  variables: [
+    "creditor",
+    "invoiceCategory",
+    "amount",
+    "invoiceNumber",
+    "invoiceDocumentUpload"
+  ]
+};
 
 // create a handler for the task
 const handler = async ({ task, taskService }) => {
@@ -108,7 +109,8 @@ async function complete(taskService, task, approveVariable) {
 }
 
 function askAproval(convo, approveVariable, taskService, task) {
-  convo.ask("Do you approve the Invoice?", function(response, convo) {
+  convo.ask("Do you approve the Invoice?", async function(response, convo) {
+
     if (response.text === "yes") {
       convo.say("Great!");
       approveVariable.set("approved", true);
@@ -129,47 +131,50 @@ function askAproval(convo, approveVariable, taskService, task) {
   });
 }
 
-// function AsktoApprove(response, convo) {
-//   convo.ask("Do you approve" + response.text + "`?", [
-//     {
-//       pattern: "yes",
-//       callback: function(response, convo) {
-//         try {
-//           await taskService.complete(task);
-//           console.log("I completed my task successfully!!");
-//         } catch (e) {
-//           console.error(`Failed completing my task, ${e}`);
-//         }
-//         // since no further messages are queued after this,
-//         // the conversation will end naturally with status == 'completed'
-//         convo.next();
-//       }
-//     },
-//     {
-//       pattern: "no",
-//       callback: function(response, convo) {
-//         try {
-//           await taskService.complete(task);
-//           console.log("I completed my task successfully!!");
-//         } catch (e) {
-//           console.error(`Failed completing my task, ${e}`);
-//         }
-//         // stop the conversation. this will cause it to end with status == 'stopped'
-//         convo.stop();
-//       }
-//     },
-//     {
-//       default: true,
-//       callback: function(response, convo) {
-//         convo.say("welcome");
-//         convo.repeat();
-//         convo.next();
-//       }
-//     }
-//   ]);
+function AsktoApprove(response, convo) {
+  convo.ask("Do you approve" + response.text + "`?", [
+    {
+      pattern: "yes",
+      callback: function(response, convo) {
+        try {
+          await taskService.complete(task);
+          console.log("I completed my task successfully!!");
+        } catch (e) {
+          console.error(`Failed completing my task, ${e}`);
+        }
+        // since no further messages are queued after this,
+        // the conversation will end naturally with status == 'completed'
+        convo.next();
+      }
+    },
+    {
+      pattern: "no",
+      callback: function(response, convo) {
+        try {
+          await taskService.complete(task);
+          console.log("I completed my task successfully!!");
+        } catch (e) {
+          console.error(`Failed completing my task, ${e}`);
+        }
+        // stop the conversation. this will cause it to end with status == 'stopped'
+        convo.stop();
+      }
+    },
+    {
+      default: true,
+      callback: function(response, convo) {
+        convo.say("welcome");
+        convo.repeat();
+        convo.next();
+      }
+    }
+  ]);
 
-//   convo.next();
-// }
+  convo.next();
+}
 
 // susbscribe to the topic 'creditScoreChecker' & provide the created handler
 client.subscribe("ApproveInvoice", customOption, handler);
+
+
+
