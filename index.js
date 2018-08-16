@@ -9,11 +9,11 @@ const absence = require("./absenceClient");
 
 const Botkit = require("botkit");
 
-const sendPdf = require("./engineIntegration");
+const { sendPdf, getCreditorsInvoices } = require("./engineIntegration");
 
 const holidayData = absence.returnHolidayData();
 
-console.log(holidayData);
+// console.log(holidayData);
 const USERS = {
   me: "UC917TW2E",
   omran: "UC8PT88BE",
@@ -57,7 +57,7 @@ controller.hears(
   }
 );
 
-const client = new Client(config);
+// const client = new Client(config);
 
 // create a handler for the task
 // const handler = async ({ task, taskService }) => {
@@ -91,7 +91,8 @@ const { creditor, invoiceCategory, amount, invoiceNumber } = {
 };
 
 const task = {
-  processInstanceId: "88ea0b8c-a12d-11e8-a0f6-acde48001122"
+  processInstanceId: "88ea0b8c-a12d-11e8-a0f6-acde48001122",
+  processDefinitionID: "invoice:5:c36cccfc-a0a7-11e8-ae17-acde48001122"
 };
 
 const taskService = {
@@ -100,16 +101,16 @@ const taskService = {
 
 const approveVariable = new Variables();
 
-// bot.startConversation(DEFUALT_USER, async function(err, convo) {
-//   if (!err) {
-//     convo.say("Hello, You have an Invoice to approve!");
-//     convo.say("Here is the information of the Invoice: ");
-//     convo.say(
-//       `Creditor: ${creditor}\nInvoice category: ${invoiceCategory}\nAmount: ${amount}\nInvoice number: ${invoiceNumber}`
-//     );
-//     askAproval(convo, approveVariable, taskService, task);
-//   }
-// });
+bot.startConversation(DEFUALT_USER, async function(err, convo) {
+  if (!err) {
+    convo.say("Hello, You have an Invoice to approve!");
+    convo.say("Here is the information of the Invoice: ");
+    convo.say(
+      `Creditor: ${creditor}\nInvoice category: ${invoiceCategory}\nAmount: ${amount}\nInvoice number: ${invoiceNumber}`
+    );
+    askAproval(convo, approveVariable, taskService, task);
+  }
+});
 
 async function complete(taskService, task, approveVariable) {
   try {
@@ -143,7 +144,32 @@ function askAproval(convo, approveVariable, taskService, task) {
         });
         break;
       case "Previous invoices":
-        convo.say("Here you go");
+        let replyText = "Here you go \n";
+        getCreditorsInvoices(
+          creditor,
+          task.processDefinitionID,
+          (err, data) => {
+            if (err) console.log(err);
+            Object.keys(data).forEach(key => {
+              const amount = data[key].find(
+                variable => variable.name === "amount"
+              );
+              const invoiceCategory = data[key].find(
+                variable => variable.name === "invoiceCategory"
+              );
+              const approved = data[key].find(
+                variable => variable.name === "approved"
+              );
+              replyText += `Invoice Type: ${invoiceCategory.value}\n`;
+              replyText += `amount: ${amount.value}\n`;
+              replyText += `${approved.value ? "Approved" : "Not approved"}\n`;
+              replyText += `--------------------------------------------\n`;
+            });
+            bot.reply(convo.source_message, replyText);
+            convo.repeat();
+            convo.next();
+          }
+        );
         break;
       case "Show absences":
         convo.say("Test");
