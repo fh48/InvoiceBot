@@ -2,7 +2,7 @@ const request = require("request");
 const download = require('download-pdf');
 const fs = require("fs");
 
-const sendPdf = (processInstanceId, cb) => {
+exports.sendPdf = (processInstanceId, cb) => {
   request.get(`http://localhost:8080/engine-rest/process-instance/${processInstanceId}/variables/`, (e, r, b) => {
     if (e) {
       cb(e);
@@ -17,7 +17,7 @@ const sendPdf = (processInstanceId, cb) => {
             filename: variable + ".pdf"
         }
         download(pdf, options, function(err){
-          if (error) {
+          if (err) {
             cb(err);
             return;
           }
@@ -33,14 +33,6 @@ const sendPdf = (processInstanceId, cb) => {
             if (err) {
               cb(err);
               return;
-            } else {
-              fs.unlink(variable + ".pdf", (err2) => {
-                if (err2) {
-                  cb(err2);
-                  return;
-                }
-              });
-              cb(null);
             }
             options = {
               method: "POST",
@@ -50,7 +42,7 @@ const sendPdf = (processInstanceId, cb) => {
                   "Bearer xoxb-418375872038-416341547520-Sa9qPMwFs8R8ZyBBQISLu1dP"
               },
               formData: {
-                channels: "DC8T86G1H",
+                channels: "UC917TW2E",
                 filetype: "pdf",
                 file: fs.createReadStream(variable + ".pdf"),
                 filename: "file.pdf"
@@ -62,6 +54,12 @@ const sendPdf = (processInstanceId, cb) => {
                 cb(error);
                 return;
               } else {
+                fs.unlink(variable + ".pdf", (err2) => {
+                  if (err2) {
+                    cb(err2);
+                    return;
+                  }
+                });
                 cb(null);
               }
             });
@@ -72,7 +70,7 @@ const sendPdf = (processInstanceId, cb) => {
   })
 }
 
-const getCreditorsInvoices = (creditor, procDefId, cb) => {
+exports.getCreditorsInvoices = (creditor, procDefId, cb) => {
   request.get(`http://localhost:8080/engine-rest/history/variable-instance?processDefinitionId=${procDefId}`, (e, r, b) => {
     if (e) {
       cb(e, null);
