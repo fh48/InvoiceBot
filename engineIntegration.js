@@ -1,6 +1,7 @@
 const request = require("request");
 const download = require("download-pdf");
 const fs = require("fs");
+const {getHolidayRanges} = require("./absenceClient");
 
 exports.sendPdf = (processInstanceId, cb) => {
   request.get(
@@ -124,6 +125,30 @@ exports.getCreditorsInvoices = (creditor, procDefId, cb) => {
           }
         );
       });
+    });
+  })
+}
+
+exports.matchAbsenceDate = (procInstIds, cb) => {
+  request.get(`http://localhost:8080/engine-rest/history/process-instance/${procInstIds}`, (e, r, body) => {
+    const b = JSON.parse(body);
+    if (!e) {
+      let match = false;
+      getHolidayRanges(data => {
+        data.forEach(absence => {
+          const absStart = new Date(absence.start);
+          const absEnd = new Date(absence.end);
+          const instStart = new Date(b.startTime)
+          if (absStart < instStart && absEnd > instStart) {
+            match = true;
+            cb({absenceStart: absence.start, absenceEnd: absence.end, invoiceDate: b.startTime, match: true});
+            return;
+          }
+        })
+        if(!match) {
+          cb({absenceStart: null, absenceEnd: null, invoiceDate: instStart, match: false});
+        }
+      })
     }
-  );
-};
+  });
+}
