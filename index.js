@@ -6,6 +6,9 @@ const {
 } = require("camunda-external-task-client-js");
 
 const absence = require("./absenceClient");
+const sendPdf = require("./engineIntegration");
+
+const Botkit = require("botkit");
 
 const sendPdf = require("./engineIntegration");
 
@@ -79,23 +82,7 @@ const handler = async ({ task, taskService }) => {
       convo.say(
         `Creditor: ${creditor}\nInvoice category: ${invoiceCategory}\nAmount: ${amount}\nInvoice number: ${invoiceNumber}`
       );
-      convo.ask("Do you approve the Invoice?", function(response, convo) {
-        if (response.text === "yes") {
-          convo.say("Great!");
-          approveVariable.set("approved", true);
-          complete(taskService, task, approveVariable);
-        } else if (response.text === "show invoice") {
-          sendPdf(task.processInstanceId, () => {
-            convo.repeat();
-            convo.next();
-          });
-        } else {
-          convo.say("Done");
-          approveVariable.set("approved", false);
-          complete(taskService, task, approveVariable);
-        }
-        convo.next();
-      }); // store the results in a field called nickname
+      askAproval(convo, approveVariable, taskService, task);
     }
   });
 };
@@ -107,6 +94,28 @@ async function complete(taskService, task, approveVariable) {
   } catch (e) {
     console.error(`Failed completing my task, ${e}`);
   }
+}
+
+function askAproval(convo, approveVariable, taskService, task) {
+  convo.ask("Do you approve the Invoice?", function(response, convo) {
+    if (response.text === "yes") {
+      convo.say("Great!");
+      approveVariable.set("approved", true);
+      complete(taskService, task, approveVariable);
+      convo.next();
+    } else if (response.text === "show invoice") {
+      sendPdf(task.processInstanceId, err => {
+        if (err) console.log(err);
+        convo.repeat();
+        convo.next();
+      });
+    } else {
+      convo.say("Done");
+      approveVariable.set("approved", false);
+      complete(taskService, task, approveVariable);
+      convo.next();
+    }
+  });
 }
 
 // function AsktoApprove(response, convo) {
