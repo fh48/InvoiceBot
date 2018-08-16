@@ -59,3 +59,22 @@ exports.getLatestAbsence = (cb) => {
     cb(data[0]);
   })
 }
+
+exports.isOnHoliday = (day, cb) => {
+  returnHolidayData(data => {
+    let match = false;
+    const date = new Date(day);
+    data.forEach(absence => {
+      const absStart = new Date(absence.start);
+      const absEnd = new Date(absence.end);
+      if (absStart < date && absEnd > date) {
+        match = true;
+        cb({absenceStart: absence.start, absenceEnd: absence.end, match: true});
+        return;
+      }
+    })
+    if(!match) {
+      cb({absenceStart: null, absenceEnd: null, match: false});
+    }
+  })
+}

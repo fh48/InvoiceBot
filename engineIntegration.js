@@ -133,17 +133,21 @@ exports.matchAbsenceDate = (procInstIds, cb) => {
   request.get(`http://localhost:8080/engine-rest/history/process-instance/${procInstIds}`, (e, r, body) => {
     const b = JSON.parse(body);
     if (!e) {
+      let match = false;
       getHolidayRanges(data => {
         data.forEach(absence => {
           const absStart = new Date(absence.start);
           const absEnd = new Date(absence.end);
           const instStart = new Date(b.startTime)
           if (absStart < instStart && absEnd > instStart) {
-            cb({absenceStart: absence.start, absenceEnd: absence.end, invoiceDate: b.startTim, match: true});
+            match = true;
+            cb({absenceStart: absence.start, absenceEnd: absence.end, invoiceDate: b.startTime, match: true});
             return;
           }
         })
-        cb({absenceStart: null, absenceEnd: null, invoiceDate: instStart, match: false});
+        if(!match) {
+          cb({absenceStart: null, absenceEnd: null, invoiceDate: instStart, match: false});
+        }
       })
     }
   });
