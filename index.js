@@ -12,6 +12,8 @@ const Botkit = require("botkit");
 const sendPdf = require("./engineIntegration");
 
 const holidayData = absence.returnHolidayData();
+
+console.log(holidayData);
 const USERS = {
   me: "UC917TW2E",
   omran: "UC8PT88BE",
@@ -36,12 +38,6 @@ var bot = controller
   })
   .startRTM();
 
-// // const DEFUALT_USER = {
-// //   type: "direct_message",
-// //   user: "UC8PT88BE",
-// //   channel: "DC8T86G1H"
-// // };
-
 const config = {
   baseUrl: "http://localhost:8080/engine-rest",
   use: logger,
@@ -63,44 +59,61 @@ controller.hears(
 
 const client = new Client(config);
 
-// const customOption = {
-//   lockDuration: 5000,
-//   variables: [
-//     "creditor",
-//     "invoiceCategory",
-//     "amount",
-//     "invoiceNumber",
-//     "invoiceDocumentUpload"
-//   ]
+// create a handler for the task
+// const handler = async ({ task, taskService }) => {
+//   // get task variable;
+//   const {
+//     creditor,
+//     invoiceCategory,
+//     amount,
+//     invoiceNumber
+//   } = task.variables.getAll();
+
+//   const approveVariable = new Variables();
+
+//   bot.startConversation(DEFUALT_USER, async function(err, convo) {
+//     if (!err) {
+//       convo.say("Hello, You have an Invoice to approve!");
+//       convo.say("Here is the information of the Invoice: ");
+//       convo.say(
+//         `Creditor: ${creditor}\nInvoice category: ${invoiceCategory}\nAmount: ${amount}\nInvoice number: ${invoiceNumber}`
+//       );
+//       askAproval(convo, approveVariable, taskService, task);
+//     }
+//   });
 // };
 
-// create a handler for the task
-const handler = async ({ task, taskService }) => {
-  // get task variable;
-  const {
-    creditor,
-    invoiceCategory,
-    amount,
-    invoiceNumber
-  } = task.variables.getAll();
-
-  const approveVariable = new Variables();
-
-  bot.startConversation(DEFUALT_USER, async function(err, convo) {
-    if (!err) {
-      convo.say("Hello, You have an Invoice to approve!");
-      convo.say("Here is the information of the Invoice: ");
-      convo.say(
-        `Creditor: ${creditor}\nInvoice category: ${invoiceCategory}\nAmount: ${amount}\nInvoice number: ${invoiceNumber}`
-      );
-      askAproval(convo, approveVariable, taskService, task);
-    }
-  });
+const { creditor, invoiceCategory, amount, invoiceNumber } = {
+  creditor: "omran",
+  invoiceCategory: "test",
+  amount: 25,
+  invoiceNumber: 33
 };
+
+const task = {
+  processInstanceId: "88ea0b8c-a12d-11e8-a0f6-acde48001122"
+};
+
+const taskService = {
+  complete: () => {}
+};
+
+const approveVariable = new Variables();
+
+// bot.startConversation(DEFUALT_USER, async function(err, convo) {
+//   if (!err) {
+//     convo.say("Hello, You have an Invoice to approve!");
+//     convo.say("Here is the information of the Invoice: ");
+//     convo.say(
+//       `Creditor: ${creditor}\nInvoice category: ${invoiceCategory}\nAmount: ${amount}\nInvoice number: ${invoiceNumber}`
+//     );
+//     askAproval(convo, approveVariable, taskService, task);
+//   }
+// });
 
 async function complete(taskService, task, approveVariable) {
   try {
-    await taskService.complete(task, approveVariable);
+    // await taskService.complete(task, approveVariable);
     console.log("I completed my task successfully!!");
   } catch (e) {
     console.error(`Failed completing my task, ${e}`);
@@ -109,22 +122,34 @@ async function complete(taskService, task, approveVariable) {
 
 function askAproval(convo, approveVariable, taskService, task) {
   convo.ask("Do you approve the Invoice?", function(response, convo) {
-    if (response.text === "yes") {
-      convo.say("Great!");
-      approveVariable.set("approved", true);
-      complete(taskService, task, approveVariable);
-      convo.next();
-    } else if (response.text === "show invoice") {
-      sendPdf(task.processInstanceId, err => {
-        if (err) console.log(err);
-        convo.repeat();
+    switch (response.text) {
+      case "yes":
+        convo.say("Great!");
+        approveVariable.set("approved", true);
+        complete(taskService, task, approveVariable);
         convo.next();
-      });
-    } else {
-      convo.say("Done");
-      approveVariable.set("approved", false);
-      complete(taskService, task, approveVariable);
-      convo.next();
+        break;
+      case "no":
+        convo.say("Done");
+        approveVariable.set("approved", false);
+        complete(taskService, task, approveVariable);
+        convo.next();
+        break;
+      case "show invoice":
+        sendPdf(task.processInstanceId, err => {
+          if (err) console.log(err);
+          convo.repeat();
+          convo.next();
+        });
+        break;
+      case "Previous invoices":
+        convo.say("Here you go");
+        break;
+      case "Show absences":
+        convo.say("Test");
+        break;
+      default:
+        convo.repeat();
     }
   });
 }
@@ -172,4 +197,4 @@ function askAproval(convo, approveVariable, taskService, task) {
 // }
 
 // susbscribe to the topic 'creditScoreChecker' & provide the created handler
-client.subscribe("ApproveInvoice", customOption, handler);
+// client.subscribe("ApproveInvoice", customOption, handler);
