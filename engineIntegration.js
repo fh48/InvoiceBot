@@ -31,7 +31,7 @@ exports.sendPdf = (processInstanceId, cb) => {
                   "Bearer xoxb-418375872038-416341547520-Sa9qPMwFs8R8ZyBBQISLu1dP"
               },
               formData: {
-                channels: "DC8T86G1H",
+                channels: "UC8PT88BE",
                 filetype: "pdf",
                 file: fs.createReadStream(variable + ".pdf"),
                 filename: variable + ".pdf"
@@ -50,7 +50,7 @@ exports.sendPdf = (processInstanceId, cb) => {
                     "Bearer xoxb-418375872038-416341547520-Sa9qPMwFs8R8ZyBBQISLu1dP"
                 },
                 formData: {
-                  channels: "UC917TW2E",
+                  channels: "UC8PT88BE",
                   filetype: "pdf",
                   file: fs.createReadStream(variable + ".pdf"),
                   filename: "file.pdf"

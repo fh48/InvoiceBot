@@ -124,29 +124,31 @@ async function complete(taskService, task, approveVariable) {
 }
 
 function askAproval(convo, approveVariable, taskService, task) {
-  convo.ask("Do you approve the Invoice?", function(response, convo) {
-    switch (response.text) {
-      case "yes":
+  convo.ask("Do you approve the Invoice?", async function(response, convo) {
+    const intent = await dialogflow.fetchIntent(response.text);
+
+    switch (intent) {
+      case "smalltalk.confirmation.yes":
         convo.say("Great!");
         approveVariable.set("approved", true);
         complete(taskService, task, approveVariable);
         convo.next();
         break;
-      case "no":
+      case "smalltalk.confirmation.no":
         convo.say("Done");
         approveVariable.set("approved", false);
         complete(taskService, task, approveVariable);
         convo.next();
         break;
-      case "show invoice":
+      case "invoice.show":
         sendPdf(task.processInstanceId, err => {
           if (err) console.log(err);
           convo.repeat();
           convo.next();
         });
         break;
-      case "Previous invoices":
-        let replyText = "Here you go \n";
+      case "invoice.show.more":
+        let replyText = "Here you go: \n \n";
         getCreditorsInvoices(
           creditor,
           task.processDefinitionID,

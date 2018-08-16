@@ -26,20 +26,11 @@ exports.fetchIntent = async query => {
   };
 
   // Send request and log result
-  sessionClient
-    .detectIntent(request)
-    .then(responses => {
-      const result = responses[0].queryResult;
-      console.log(`  Query: ${result.queryText}`);
+  const responses = await sessionClient.detectIntent(request);
 
-      if (result.intent) {
-        console.log("Intent:", result.intent.displayName);
-        return result.intent.displayName;
-      } else {
-        return "noMatch";
-      }
-    })
-    .catch(err => {
-      console.error("ERROR:", err);
-    });
+  const result = responses[0].queryResult;
+  console.log(`  Query: ${result.queryText}`);
+
+  if (result.action) return result.action;
+  return result.intent ? result.intent.displayName : "noMatch";
 };
