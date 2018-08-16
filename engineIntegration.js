@@ -2,6 +2,7 @@ const request = require("request");
 const download = require("download-pdf");
 const fs = require("fs");
 const {getHolidayRanges} = require("./absenceClient");
+const PDFImage = require("pdf-image").PDFImage;
 
 exports.sendPdf = (processInstanceId, cb) => {
   request.get(
@@ -43,34 +44,37 @@ exports.sendPdf = (processInstanceId, cb) => {
                 cb(err);
                 return;
               }
-              options = {
-                method: "POST",
-                url: "https://slack.com/api/files.upload",
-                headers: {
-                  Authorization:
-                    "Bearer xoxb-418375872038-416341547520-Sa9qPMwFs8R8ZyBBQISLu1dP"
-                },
-                formData: {
-                  channels: "UC917TW2E",
-                  filetype: "pdf",
-                  file: fs.createReadStream(variable + ".pdf"),
-                  filename: "file.pdf"
-                }
-              };
-
-              request(options, function(error, response, body) {
-                if (error) {
-                  cb(error);
-                  return;
-                } else {
-                  fs.unlink(variable + ".pdf", err2 => {
-                    if (err2) {
-                      cb(err2);
-                      return;
-                    }
-                  });
-                  cb(null);
-                }
+              const pdfImage = new PDFImage(variable + ".pdf");
+              pdfImage.convertPage(0).then(function(img) {
+                options = {
+                  method: "POST",
+                  url: "https://slack.com/api/files.upload",
+                  headers: {
+                    Authorization:
+                      "Bearer xoxb-418375872038-416341547520-Sa9qPMwFs8R8ZyBBQISLu1dP"
+                  },
+                  formData: {
+                    channels: "UC917TW2E",
+                    filetype: "png",
+                    file: fs.createReadStream(img),
+                    filename: img
+                  }
+                };
+                request(options, function(error, response, body) {
+                  if (error) {
+                    cb(error);
+                    return;
+                  } else {
+                    fs.unlink(img, err2 => {
+                      if (err2) {
+                        cb(err2);
+                        return;
+                      }
+                    });
+                    console.log(body);
+                    cb(null);
+                  }
+                });
               });
             });
           });
@@ -81,9 +85,7 @@ exports.sendPdf = (processInstanceId, cb) => {
 };
 
 exports.getCreditorsInvoices = (creditor, procDefId, cb) => {
-  request.get(
-    `http://localhost:8080/engine-rest/history/variable-instance?processDefinitionId=${procDefId}`,
-    (e, r, b) => {
+  request.get(`http://localhost:8080/engine-rest/history/variable-instance?processDefinitionId=${procDefId}`, (e, r, b) => {
       if (e) {
         cb(e, null);
         return;
@@ -120,13 +122,10 @@ exports.getCreditorsInvoices = (creditor, procDefId, cb) => {
                     hackyFlag = true;
                   }
                 }
-              }
-            );
-          }
-        );
+              });
+          })
+        });
       });
-    });
-  })
 }
 
 exports.matchAbsenceDate = (procInstIds, cb) => {
@@ -152,3 +151,6 @@ exports.matchAbsenceDate = (procInstIds, cb) => {
     }
   });
 }
+exports.sendPdf("2f96d06e-a13d-11e8-b63b-8eb4ce52a4bf", (e) => {
+  console.log("SUS");
+})
