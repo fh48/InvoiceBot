@@ -32,7 +32,7 @@ const { header } = Hawk.client.header(
 requestOptions.headers.Authorization = header;
 
 // Send authenticated request
-returnHolidayData = (cb) =>
+returnHolidayData = cb =>
   Request(requestOptions, (error, response, body) => {
     // Authenticate the server's response
     const isValid = Hawk.client.authenticate(
@@ -45,20 +45,24 @@ returnHolidayData = (cb) =>
     cb(responseBody.data);
   });
 
-exports.getHolidayRanges = (cb) => {
+exports.getHolidayRanges = cb => {
   returnHolidayData(data => {
     const ranges = data.map(absence => {
-      return {start: absence.start, end: absence.end, duration: absence.daysCount}
+      return {
+        start: absence.start,
+        end: absence.end,
+        duration: absence.daysCount
+      };
     });
-    cb(ranges)
-  })
-}
+    cb(ranges);
+  });
+};
 
-exports.getLatestAbsence = (cb) => {
+exports.getLatestAbsence = cb => {
   returnHolidayData(data => {
     cb(data[0]);
-  })
-}
+  });
+};
 
 exports.isOnHoliday = (day, cb) => {
   returnHolidayData(data => {
@@ -69,12 +73,16 @@ exports.isOnHoliday = (day, cb) => {
       const absEnd = new Date(absence.end);
       if (absStart < date && absEnd > date) {
         match = true;
-        cb({absenceStart: absence.start, absenceEnd: absence.end, match: true});
+        cb({
+          absenceStart: absence.start,
+          absenceEnd: absence.end,
+          match: true
+        });
         return;
       }
-    })
-    if(!match) {
-      cb({absenceStart: null, absenceEnd: null, match: false});
+    });
+    if (!match) {
+      cb({ absenceStart: null, absenceEnd: null, match: false });
     }
-  })
-}
+  });
+};

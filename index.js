@@ -1,5 +1,4 @@
 // local files
-const absence = require("./absenceClient");
 const dialogflow = require("./dialogFlowClient");
 
 // libraries
@@ -12,8 +11,11 @@ const {
 const Botkit = require("botkit");
 
 const { sendPdf, getCreditorsInvoices } = require("./engineIntegration");
-
-const holidayData = absence.returnHolidayData();
+const {
+  getHolidayRanges,
+  getLatestAbsence,
+  isOnHoliday
+} = require("./absenceClient");
 
 // console.log(holidayData);
 const USERS = {
@@ -89,7 +91,8 @@ const { creditor, invoiceCategory, amount, invoiceNumber } = {
   creditor: "omran",
   invoiceCategory: "test",
   amount: 25,
-  invoiceNumber: 33
+  invoiceNumber: 33,
+  invoiceDate: new Date()
 };
 
 const task = {
@@ -164,6 +167,13 @@ function askAproval(convo, approveVariable, taskService, task) {
               const approved = data[key].find(
                 variable => variable.name === "approved"
               );
+              const invoiceNumber = data[key].find(
+                variable => variable.name === "invoiceNumber"
+              );
+              const invoiceDate = data[key].find(
+                variable => variable.name === "invoiceDate"
+              );
+              replyText += `Invoice number: ${invoiceNumber.value}\n`;
               replyText += `Invoice Type: ${invoiceCategory.value}\n`;
               replyText += `amount: ${amount.value}\n`;
               replyText += `${approved.value ? "Approved" : "Not approved"}\n`;
@@ -175,14 +185,27 @@ function askAproval(convo, approveVariable, taskService, task) {
           }
         );
         break;
-      case "Show absences":
-        convo.say("Test");
+      case "absence.previousHoliday":
+        let text = "";
+        returnHolidayData(data => {
+          data.forEach(el => {
+            text += "Date: " + el.start + "\n";
+            text += "days Count: " + el.daysCount + "\n";
+            text += "---------------------------\n";
+          });
+          bot.reply(convo.source_message, text);
+          convo.repeat();
+          convo.next();
+        });
+        break;
+      case "invoice.show.byId":
+        break;
+      case "absence.matchInvoiceDate":
+        break;
+      case "tool.support":
         break;
       default:
         convo.repeat();
     }
   });
 }
-
-// susbscribe to the topic 'creditScoreChecker' & provide the created handler
-// client.subscribe("ApproveInvoice", customOption, handler);
