@@ -84,6 +84,7 @@ exports.getCreditorsInvoices = (creditor, procDefId, cb) => {
       }
     });
     const final = {};
+    let hackyFlag = false;
     procInstIds.forEach((id, i) => {
       request.get(`http://localhost:8080/engine-rest/history/variable-instance?processInstanceId=${id}`, (e2, r2, b2) => {
         if (e2) {
@@ -94,8 +95,11 @@ exports.getCreditorsInvoices = (creditor, procDefId, cb) => {
         request.get(`http://localhost:8080/engine-rest/history/process-instance/${id}`, (e3, r3, b3) => {
           const c3 = JSON.parse(b3);
           final[c3.startTime] = instanceInstance;
-          if (i === 4 || i === procInstIds.length - 1) {
-            cb(null, final);
+          if (Object.keys(final).length === 5 || Object.keys(final).length === procInstIds.length) {
+            if (!hackyFlag) {
+              cb(null, final);
+              hackyFlag = true;
+            }
           }
         });
       });
