@@ -65,13 +65,18 @@ exports.sendPdf = (processInstanceId, cb) => {
                     cb(error);
                     return;
                   } else {
-                    fs.unlink(img, err2 => {
+                    fs.unlink((img, err2) => {
                       if (err2) {
                         cb(err2);
                         return;
                       }
                     });
-                    console.log(body);
+                    fs.unlink((variable + ".pdf", errrrrrrrrrrr) => {
+                      if (errrrrrrrrrrr) {
+                        cb(errrrrrrrrrrr);
+                        return;
+                      }
+                    });
                     cb(null);
                   }
                 });
