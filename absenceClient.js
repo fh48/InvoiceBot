@@ -33,7 +33,7 @@ requestOptions.headers.Authorization = header;
 
 // Send authenticated request
 exports.returnHolidayData = () =>
-  await Request(requestOptions, (error, response, body) => {
+  Request(requestOptions, (error, response, body) => {
     // Authenticate the server's response
     const isValid = Hawk.client.authenticate(
       response,
@@ -42,6 +42,6 @@ exports.returnHolidayData = () =>
       { payload: body }
     );
     let responseBody = JSON.parse(body);
-    
+
     return responseBody.data;
   });

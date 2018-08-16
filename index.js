@@ -6,7 +6,6 @@ const {
 } = require("camunda-external-task-client-js");
 
 const absence = require("./absenceClient");
-const sendPdf = require("./engineIntegration");
 
 const Botkit = require("botkit");
 
@@ -25,7 +24,17 @@ const DEFUALT_USER = {
   channel: "DC8T86G1H"
 };
 
-// // const Botkit = require("botkit");
+var controller = Botkit.slackbot({
+  clientId: "418375872038.417185195285",
+  clientSecret: "3c040c065f1e59fce74be2ed3d899d5b",
+  scopes: ["bot"]
+});
+
+var bot = controller
+  .spawn({
+    token: "xoxb-418375872038-416341547520-Sa9qPMwFs8R8ZyBBQISLu1dP"
+  })
+  .startRTM();
 
 // // const DEFUALT_USER = {
 // //   type: "direct_message",
@@ -51,6 +60,8 @@ controller.hears(
     bot.reply(message, "hello");
   }
 );
+
+const client = new Client(config);
 
 // const customOption = {
 //   lockDuration: 5000,
